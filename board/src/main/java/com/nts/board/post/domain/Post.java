@@ -46,6 +46,18 @@ public class Post {
         this.postAuthor = postAuthor;
         this.password = password;
     }
+    @Builder
+    public Post(Long postPk, String title, String postAuthor, int hit, Date createdAt, int postLike) {
+        this.postPk = postPk;
+        this.title = title;
+        this.postAuthor = postAuthor;
+        this.hit = hit;
+        this.createdAt = createdAt;
+        this.postLike = postLike;
+    }
+
+
+
 
     public void update(String title, String postContent) {
         this.title = title;
