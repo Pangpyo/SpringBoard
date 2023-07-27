@@ -5,11 +5,10 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -39,13 +38,19 @@ public class Post {
     @ColumnDefault("0")
     private int postLike;
 
+    @ManyToMany
+    @JoinTable(name = "post_hashtag")
+    private List<Hashtag> hashtags = new ArrayList<>();
+
     @Builder
-    public Post(String title, String postContent, String postAuthor, String password) {
+    public Post(String title, String postContent, String postAuthor, String password, List<Hashtag> hashtags) {
         this.title = title;
         this.postContent = postContent;
         this.postAuthor = postAuthor;
         this.password = password;
+        this.hashtags = hashtags;
     }
+
     @Builder
     public Post(Long postPk, String title, String postAuthor, int hit, Date createdAt, int postLike) {
         this.postPk = postPk;
@@ -55,9 +60,6 @@ public class Post {
         this.createdAt = createdAt;
         this.postLike = postLike;
     }
-
-
-
 
     public void update(String title, String postContent) {
         this.title = title;
