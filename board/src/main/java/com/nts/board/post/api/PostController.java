@@ -1,11 +1,14 @@
 package com.nts.board.post.api;
 
 import com.nts.board.post.application.PostService;
+import com.nts.board.post.dto.PostListResponseDto;
 import com.nts.board.post.dto.PostRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -26,10 +29,20 @@ public class PostController {
 
     @PutMapping("/{postPk}")
     public ResponseEntity<String> updatePost(@PathVariable Long postPk, @RequestBody PostRequestDto dto) {
-        if (postService.updatePost(postPk, dto)) {
+        if (postService.modifyPost(postPk, dto)) {
             return new ResponseEntity<String>(SUCCESS, HttpStatus.OK);
         }else {
             return new ResponseEntity<String>(FAIL, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getPostList() {
+        List<PostListResponseDto> posts = postService.findPostList();
+        if (posts != null && !posts.isEmpty()) {
+            return new ResponseEntity<List<PostListResponseDto>>(posts, HttpStatus.OK);
+        }else {
+            return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
         }
     }
 }
