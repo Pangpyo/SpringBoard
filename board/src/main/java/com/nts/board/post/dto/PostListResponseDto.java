@@ -1,5 +1,6 @@
 package com.nts.board.post.dto;
 
+import com.nts.board.post.domain.Post;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,13 +21,13 @@ public class PostListResponseDto {
     private int commentCount;
 
     @Builder
-    public PostListResponseDto(Long postPk, String title, Date createdAt, String postAuthor, int hit, int postLike) {
+    public PostListResponseDto(Long postPk, String title, Date createdAt, String postAuthor, int hit, int postLike, int commentCount) {
         this.postPk = postPk;
         this.title = title;
         this.createdAt = createdAt;
         this.postAuthor = postAuthor;
         this.hit = hit;
         this.postLike = postLike;
-        this.commentCount = 0;
+        this.commentCount = commentCount;
     }
 }

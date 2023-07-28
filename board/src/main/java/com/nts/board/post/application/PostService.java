@@ -7,6 +7,9 @@ import com.nts.board.post.domain.Post;
 import com.nts.board.post.dto.PostListResponseDto;
 import com.nts.board.post.dto.PostRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -52,7 +55,17 @@ public class PostService {
     }
 
 
-    public List<PostListResponseDto> findPostList() {
-        return postRepository.findAllByOrderByPostPkDesc();
+    public Page<PostListResponseDto> findPostList(int page) {
+        PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("postPk").descending());
+        Page<Post> posts = postRepository.findAllBy(pageRequest);
+        return posts.map(post -> PostListResponseDto.builder()
+                .postPk(post.getPostPk())
+                .title(post.getTitle())
+                .createdAt(post.getCreatedAt())
+                .postAuthor(post.getPostAuthor())
+                .hit(post.getHit())
+                .postLike(post.getPostLike())
+                .commentCount(post.getComments().size())
+                .build());
     }
 }

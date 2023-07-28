@@ -1,5 +1,6 @@
 package com.nts.board.post.domain;
 
+import com.nts.board.comment.domain.Comment;
 import com.sun.istack.NotNull;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -41,6 +42,9 @@ public class Post {
     @ManyToMany
     @JoinTable(name = "post_hashtag")
     private List<Hashtag> hashtags = new ArrayList<>();
+
+    @OneToMany
+    private List<Comment> comments = new ArrayList<>();
 
     @Builder
     public Post(String title, String postContent, String postAuthor, String password, List<Hashtag> hashtags) {

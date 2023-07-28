@@ -4,6 +4,7 @@ import com.nts.board.post.application.PostService;
 import com.nts.board.post.dto.PostListResponseDto;
 import com.nts.board.post.dto.PostRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,10 +38,10 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getPostList() {
-        List<PostListResponseDto> posts = postService.findPostList();
+    public ResponseEntity<?> getPostList(@RequestParam int page) {
+        Page<PostListResponseDto> posts = postService.findPostList(page);
         if (posts != null && !posts.isEmpty()) {
-            return new ResponseEntity<List<PostListResponseDto>>(posts, HttpStatus.OK);
+            return new ResponseEntity<Page<PostListResponseDto>>(posts, HttpStatus.OK);
         }else {
             return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
         }
