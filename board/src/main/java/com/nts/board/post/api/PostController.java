@@ -2,14 +2,12 @@ package com.nts.board.post.api;
 
 import com.nts.board.post.application.PostService;
 import com.nts.board.post.dto.PostListResponseDto;
-import com.nts.board.post.dto.PostRequestDto;
+import com.nts.board.post.dto.PostSaveRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 
 @RestController
@@ -20,17 +18,27 @@ public class PostController {
     private static final String SUCCESS = "success";
     private static final String FAIL = "fail";
     @PostMapping
-    public ResponseEntity<String> insertPost(@RequestBody PostRequestDto dto) {
-        if (postService.savePost(dto) != 0) {
+    public ResponseEntity<String> insertPost(@RequestBody PostSaveRequestDto PostRequstdto) {
+        if (postService.savePost(PostRequstdto) > 0) {
             return new ResponseEntity<String>(SUCCESS, HttpStatus.CREATED);
         }else {
             return new ResponseEntity<String>(FAIL, HttpStatus.BAD_REQUEST);
         }
     }
 
+    @PostMapping("/{postPk}/checkPassword")
+    public ResponseEntity<String> checkPassword(@PathVariable Long postPk, @RequestBody String requestPassword) {
+        System.out.println(postPk + " : " + requestPassword);
+        if (postService.comparePassword(postPk, requestPassword)) {
+            return new ResponseEntity<String>(SUCCESS, HttpStatus.OK);
+        }else {
+            return new ResponseEntity<String>(FAIL, HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @PutMapping("/{postPk}")
-    public ResponseEntity<String> updatePost(@PathVariable Long postPk, @RequestBody PostRequestDto dto) {
-        if (postService.modifyPost(postPk, dto)) {
+    public ResponseEntity<String> updatePost(@PathVariable Long postPk, @RequestBody PostSaveRequestDto postRequstdto) {
+        if (postService.modifyPost(postPk, postRequstdto) > 0) {
             return new ResponseEntity<String>(SUCCESS, HttpStatus.OK);
         }else {
             return new ResponseEntity<String>(FAIL, HttpStatus.BAD_REQUEST);
