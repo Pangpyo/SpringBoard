@@ -38,4 +38,10 @@ public class CommentController {
         }
     }
 
+    @DeleteMapping("/{commentPk}")
+    public ResponseEntity<?> commentRemove(@PathVariable Long commentPk) {
+        commentService.removeComment(commentPk);
+        return new ResponseEntity<String>(SUCCESS, HttpStatus.OK);
+    }
+
 }

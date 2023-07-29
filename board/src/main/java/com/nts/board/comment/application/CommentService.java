@@ -11,8 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.nts.board.comment.dao.CommentRepository;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import javax.persistence.EntityNotFoundException;
 
 @RequiredArgsConstructor
 @Service
@@ -23,10 +22,10 @@ public class CommentService {
 
     public Long addComment(Long postPk, CommentRequestDto commentRequestDto) {
         return commentRepository.save(Comment.builder()
-                        .commentAuthor(commentRequestDto.getCommentAuthor())
-                        .commentContent(commentRequestDto.getCommentContent())
-                        .postPk(postPk)
-                        .build()).getCommentPk();
+                .commentAuthor(commentRequestDto.getCommentAuthor())
+                .commentContent(commentRequestDto.getCommentContent())
+                .postPk(postPk)
+                .build()).getCommentPk();
     }
 
     public Page<CommentResponseDto> findCommentList(Long postPk, int page) {
@@ -35,9 +34,16 @@ public class CommentService {
         return comments.map(comment -> CommentResponseDto.builder()
                 .commentPk(comment.getCommentPk())
                 .commentAuthor(comment.getCommentAuthor())
-                .commentContent(comment.getCommentContent())
+                .commentContent(comment.isDeleted() ? "삭제된 메시지입니다" : comment.getCommentContent())
                 .commentAt(comment.getCommentAt())
                 .isDeleted(comment.isDeleted())
                 .build());
+    }
+
+    public void removeComment(Long commentPk) {
+        Comment comment = commentRepository.findById(commentPk)
+                .orElseThrow(() -> new EntityNotFoundException());
+        comment.delete();
+        commentRepository.save(comment);
     }
 }

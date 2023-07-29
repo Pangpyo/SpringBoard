@@ -15,7 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
-import javax.transaction.Transactional;
+import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,7 +26,6 @@ public class PostService {
     private final PostRepository postRepository;
     private final HashtagRepository hashtagRepository;
 
-    @Transactional
     public Long addPost(PostSaveRequestDto postSaveRequestDto) {
         // 사용자가 설정한 해시태그들중 없는 것들은 해시태그 테이블에 추가한 후 리스트로 만든다
         Set<Hashtag> hashtagList = postSaveRequestDto.getHashtags().stream()
@@ -41,7 +40,7 @@ public class PostService {
                         .hashtags(hashtagList)
                         .password(postSaveRequestDto.getPassword())
                         .build())
-                        .getPostPk();
+                .getPostPk();
     }
 
     public boolean checkPassword(Long postPk, String requestPassword) {
@@ -49,7 +48,7 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException())
                 .getPassword().equals(requestPassword);
     }
-    @Transactional
+
     public Long modifyPost(Long postPk, PostUpdateRequestDto postUpdateRequestDto) {
         Post post = postRepository.findById(postPk)
                 .orElseThrow(() -> new EntityNotFoundException());
@@ -62,6 +61,7 @@ public class PostService {
     public Page<PostListResponseDto> findPostList(int page) {
         PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("postPk").descending());
         Page<Post> posts = postRepository.findAllBy(pageRequest);
+        Long withinThreeDays = new Date().getTime() - 1000 * 60 * 60 * 24 * 3L;
         return posts.map(post -> PostListResponseDto.builder()
                 .postPk(post.getPostPk())
                 .title(post.getTitle())
@@ -70,6 +70,7 @@ public class PostService {
                 .hit(post.getHit())
                 .postLike(post.getPostLike())
                 .commentCount(post.getComments().size())
+                .isNew(post.getCreatedAt().getTime() >= withinThreeDays)
                 .build());
     }
 
@@ -89,9 +90,7 @@ public class PostService {
                 .build();
     }
 
-    public Long removePost(Long postPk) {
-        Post post = postRepository.findById(postPk).orElseThrow(() -> new EntityNotFoundException());
-        postRepository.delete(post);
-        return postPk;
+    public void removePost(Long postPk) {
+        postRepository.deleteById(postPk);
     }
 }
