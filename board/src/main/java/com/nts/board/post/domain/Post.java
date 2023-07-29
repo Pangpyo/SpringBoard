@@ -7,9 +7,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -40,30 +38,33 @@ public class Post {
     private int postLike;
 
     @ManyToMany
-    @JoinTable(name = "post_hashtag")
-    private List<Hashtag> hashtags = new ArrayList<>();
+    @JoinTable(name = "post_hashtag",
+            joinColumns = @JoinColumn(name = "postPk"),
+            inverseJoinColumns = @JoinColumn(name = "hashtagPk"))
+    private Set<Hashtag> hashtags = new HashSet<>();
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "commentPk")
     private List<Comment> comments = new ArrayList<>();
 
+
     @Builder
-    public Post(String title, String postContent, String postAuthor, String password, List<Hashtag> hashtags) {
+    public Post(Long postPk, String title, String postContent, String postAuthor, int hit, String password, Date createdAt, Date modifiedAt, int postLike, Set<Hashtag> hashtags, List<Comment> comments) {
+        this.postPk = postPk;
         this.title = title;
         this.postContent = postContent;
         this.postAuthor = postAuthor;
+        this.hit = hit;
         this.password = password;
+        this.createdAt = createdAt;
+        this.modifiedAt = modifiedAt;
+        this.postLike = postLike;
         this.hashtags = hashtags;
+        this.comments = comments;
     }
 
-    @Builder
-    public Post(Long postPk, String title, String postAuthor, int hit, Date createdAt, int postLike) {
-        this.postPk = postPk;
-        this.title = title;
-        this.postAuthor = postAuthor;
-        this.hit = hit;
-        this.createdAt = createdAt;
-        this.postLike = postLike;
-    }
+
+
 
     public void update(String title, String postContent) {
         this.title = title;

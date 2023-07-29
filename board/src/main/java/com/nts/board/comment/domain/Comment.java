@@ -1,5 +1,6 @@
 package com.nts.board.comment.domain;
 
+import com.nts.board.post.domain.Post;
 import com.sun.istack.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,10 +10,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
 
 @Getter
@@ -32,5 +30,9 @@ public class Comment {
     private boolean isDeleted;
     @CreationTimestamp
     private Date commentAt;
+
+    @ManyToOne
+    @JoinColumn(name = "post_pk")
+    private Post posts;
 
 }

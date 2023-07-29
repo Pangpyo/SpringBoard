@@ -5,6 +5,7 @@ import com.nts.board.post.dao.PostRepository;
 import com.nts.board.post.domain.Hashtag;
 import com.nts.board.post.domain.Post;
 import com.nts.board.post.dto.PostListResponseDto;
+import com.nts.board.post.dto.PostResponseDto;
 import com.nts.board.post.dto.PostSaveRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,8 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -26,12 +26,12 @@ public class PostService {
     private final HashtagRepository hashtagRepository;
 
     @Transactional
-    public Long savePost(PostSaveRequestDto postSaveRequestDto) {
+    public Long addPost(PostSaveRequestDto postSaveRequestDto) {
         // 사용자가 설정한 해시태그들중 없는 것들은 해시태그 테이블에 추가한 후 리스트로 만든다
-        List<Hashtag> hashtagList = postSaveRequestDto.getHashtags().stream()
+        Set<Hashtag> hashtagList = postSaveRequestDto.getHashtags().stream()
                 .map(hashtag -> hashtagRepository.existsByText(hashtag) ? hashtagRepository.findByText(hashtag) :
                         hashtagRepository.save(Hashtag.builder().text(hashtag).build()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         return postRepository
                 .save(Post.builder()
                         .title(postSaveRequestDto.getTitle())
@@ -41,7 +41,7 @@ public class PostService {
                         .getPostPk();
     }
 
-    public boolean comparePassword(Long postPk, String requestPassword) {
+    public boolean checkPassword(Long postPk, String requestPassword) {
         return postRepository.findById(postPk)
                 .orElseThrow(() -> new EntityNotFoundException())
                 .getPassword().equals(requestPassword);
@@ -68,5 +68,27 @@ public class PostService {
                 .postLike(post.getPostLike())
                 .commentCount(post.getComments().size())
                 .build());
+    }
+
+    public PostResponseDto findPostDetail(Long postPk) {
+        Post post = postRepository.findById(postPk)
+                .orElseThrow(() -> new EntityNotFoundException());
+        return PostResponseDto.builder()
+                .postPk(post.getPostPk())
+                .title(post.getTitle())
+                .postContent(post.getPostContent())
+                .postAuthor(post.getPostAuthor())
+                .hit(post.getHit())
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .postLike(post.getPostLike())
+                .hashtags(post.getHashtags())
+                .build();
+    }
+
+    public Long removePost(Long postPk) {
+        Post post = postRepository.findById(postPk).orElseThrow(() -> new EntityNotFoundException());
+        postRepository.delete(post);
+        return postPk;
     }
 }
