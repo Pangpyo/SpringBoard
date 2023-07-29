@@ -54,14 +54,21 @@ public class PostController {
     }
 
     @GetMapping("/{postPk}")
-    public ResponseEntity<?> postDetail(@PathVariable Long postPk) {
+    public ResponseEntity<PostResponseDto> postDetail(@PathVariable Long postPk) {
+        postService.updateHits(postPk);
         PostResponseDto post = postService.findPostDetail(postPk);
         return new ResponseEntity<PostResponseDto>(post, HttpStatus.OK);
     }
 
     @DeleteMapping("/{postPk}")
-    public ResponseEntity<?> postRemove(@PathVariable Long postPk) {
+    public ResponseEntity<String> postRemove(@PathVariable Long postPk) {
         postService.removePost(postPk);
+        return new ResponseEntity<String>(SUCCESS, HttpStatus.OK);
+    }
+
+    @PatchMapping("/{postPk}")
+    public ResponseEntity<String> postLike(@PathVariable Long postPk, @RequestParam boolean isLike) {
+        postService.likePost(postPk, isLike);
         return new ResponseEntity<String>(SUCCESS, HttpStatus.OK);
     }
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -74,7 +75,7 @@ public class PostService {
     public Page<PostListResponseDto> findPostList(int page) {
         PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("postPk").descending());
         Page<Post> posts = postRepository.findAllBy(pageRequest);
-        Long withinThreeDays = new Date().getTime() - 1000 * 60 * 60 * 24 * 3L;
+        Long withInThreeDays = new Date().getTime() - 1000 * 60 * 60 * 24 * 3L;
         return posts.map(post -> PostListResponseDto.builder()
                 .postPk(post.getPostPk())
                 .title(post.getTitle())
@@ -83,7 +84,7 @@ public class PostService {
                 .hit(post.getHit())
                 .postLike(post.getPostLike())
                 .commentCount(post.getComments().size())
-                .isNew(post.getCreatedAt().getTime() >= withinThreeDays)
+                .isNew(post.getCreatedAt().getTime() >= withInThreeDays)
                 .build());
     }
 
@@ -106,4 +107,16 @@ public class PostService {
     public void removePost(Long postPk) {
         postRepository.deleteById(postPk);
     }
+
+    @Transactional
+    public void updateHits(Long postPk) {
+        postRepository.updateHits(postPk);
+    }
+
+    @Transactional
+    public void likePost(Long postPk, boolean isLike) {
+        int likeValue = isLike ? 1 : -1;
+        postRepository.updateLikes(postPk, likeValue);
+    }
+
 }

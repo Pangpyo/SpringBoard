@@ -7,6 +7,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import javax.transaction.Transactional;
 import java.util.*;
 
 @Getter
@@ -61,9 +62,6 @@ public class Post {
         this.hashtags = hashtags;
         this.comments = comments;
     }
-
-
-
 
     public void update(String title, String postContent, Set<Hashtag> hashtags) {
         this.title = title;
