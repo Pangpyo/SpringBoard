@@ -4,18 +4,18 @@ import com.nts.board.post.dao.HashtagRepository;
 import com.nts.board.post.dao.PostRepository;
 import com.nts.board.post.domain.Hashtag;
 import com.nts.board.post.domain.Post;
-import com.nts.board.post.dto.PostListResponseDto;
-import com.nts.board.post.dto.PostResponseDto;
-import com.nts.board.post.dto.PostSaveRequestDto;
-import com.nts.board.post.dto.PostUpdateRequestDto;
+import com.nts.board.post.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.Path;
 import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.Set;
@@ -27,11 +27,10 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final HashtagRepository hashtagRepository;
-    private final EntityManager entityManager;
 
 
     public Long addPost(PostSaveRequestDto postSaveRequestDto) {
-        if (postSaveRequestDto.getHashtags().size() > 5){
+        if (postSaveRequestDto.getHashtags().size() > 5) {
             throw new IllegalArgumentException();
         }
         // 사용자가 설정한 해시태그들중 없는 것들은 해시태그 테이블에 추가한 후 리스트로 만든다
@@ -57,7 +56,7 @@ public class PostService {
     }
 
     public Long modifyPost(Long postPk, PostUpdateRequestDto postUpdateRequestDto) {
-        if (postUpdateRequestDto.getHashtags().size() > 5){
+        if (postUpdateRequestDto.getHashtags().size() > 5) {
             throw new IllegalArgumentException();
         }
         Post post = postRepository.findById(postPk)
@@ -75,7 +74,6 @@ public class PostService {
     public Page<PostListResponseDto> findPostList(int page) {
         PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("postPk").descending());
         Page<Post> posts = postRepository.findAllBy(pageRequest);
-        Long withInThreeDays = new Date().getTime() - 1000 * 60 * 60 * 24 * 3L;
         return posts.map(post -> PostListResponseDto.builder()
                 .postPk(post.getPostPk())
                 .title(post.getTitle())
@@ -84,7 +82,7 @@ public class PostService {
                 .hit(post.getHit())
                 .postLike(post.getPostLike())
                 .commentCount(post.getComments().size())
-                .isNew(post.getCreatedAt().getTime() >= withInThreeDays)
+                .isNew(isPostNew(post.getCreatedAt()))
                 .build());
     }
 
@@ -121,5 +119,38 @@ public class PostService {
 
     public Long countPost() {
         return postRepository.count();
+    }
+
+    public Page<PostListResponseDto> searchPost(SearchField searchField, String searchKeyword, int page) {
+        PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("postPk").descending());
+        Specification<Post> searchSpec = null;
+        if (searchField == searchField.hashtag) {
+            searchSpec =
+                    ((root, query, criteriaBuilder) -> {
+                        Join<Post, Hashtag> hashtagJoin = root.join("hashtags");
+                        return criteriaBuilder.equal(hashtagJoin.get("text"), searchKeyword);
+                    });
+        } else {
+            searchSpec =
+                    ((root, query, criteriaBuilder) ->
+                            criteriaBuilder.like(root.get(searchField.toString()), "%" + searchKeyword + "%"));
+        }
+        Page<Post> postSearchResults = postRepository.findAll(searchSpec, pageRequest);
+        return postSearchResults.map(post -> PostListResponseDto.builder()
+                .postPk(post.getPostPk())
+                .title(post.getTitle())
+                .createdAt(post.getCreatedAt())
+                .postAuthor(post.getPostAuthor())
+                .hit(post.getHit())
+                .postLike(post.getPostLike())
+                .commentCount(post.getComments().size())
+                .isNew(isPostNew(post.getCreatedAt()))
+                .build());
+    }
+
+
+    private boolean isPostNew(Date createdAt) {
+        Long withInThreeDays = new Date().getTime() - 1000 * 60 * 60 * 24 * 3L;
+        return createdAt.getTime() >= withInThreeDays;
     }
 }
