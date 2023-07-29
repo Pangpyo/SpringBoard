@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
 import java.util.Date;
 import java.util.Set;
@@ -25,10 +26,12 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final HashtagRepository hashtagRepository;
+    private final EntityManager entityManager;
+
 
     public Long addPost(PostSaveRequestDto postSaveRequestDto) {
         // 사용자가 설정한 해시태그들중 없는 것들은 해시태그 테이블에 추가한 후 리스트로 만든다
-        Set<Hashtag> hashtagList = postSaveRequestDto.getHashtags().stream()
+        Set<Hashtag> hashtags = postSaveRequestDto.getHashtags().stream()
                 .map(hashtag -> hashtagRepository.existsByText(hashtag) ? hashtagRepository.findByText(hashtag) :
                         hashtagRepository.save(Hashtag.builder().text(hashtag).build()))
                 .collect(Collectors.toSet());
@@ -37,7 +40,7 @@ public class PostService {
                         .title(postSaveRequestDto.getTitle())
                         .postContent(postSaveRequestDto.getPostContent())
                         .postAuthor(postSaveRequestDto.getPostAuthor())
-                        .hashtags(hashtagList)
+                        .hashtags(hashtags)
                         .password(postSaveRequestDto.getPassword())
                         .build())
                 .getPostPk();
@@ -52,7 +55,11 @@ public class PostService {
     public Long modifyPost(Long postPk, PostUpdateRequestDto postUpdateRequestDto) {
         Post post = postRepository.findById(postPk)
                 .orElseThrow(() -> new EntityNotFoundException());
-        post.update(postUpdateRequestDto.getTitle(), postUpdateRequestDto.getPostContent());
+        Set<Hashtag> hashtags = postUpdateRequestDto.getHashtags().stream()
+                .map(hashtag -> hashtagRepository.existsByText(hashtag) ? hashtagRepository.findByText(hashtag) :
+                        hashtagRepository.save(Hashtag.builder().text(hashtag).build()))
+                .collect(Collectors.toSet());
+        post.update(postUpdateRequestDto.getTitle(), postUpdateRequestDto.getPostContent(), hashtags);
         postRepository.save(post);
         return post.getPostPk();
     }

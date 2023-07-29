@@ -65,9 +65,10 @@ public class Post {
 
 
 
-    public void update(String title, String postContent) {
+    public void update(String title, String postContent, Set<Hashtag> hashtags) {
         this.title = title;
         this.postContent = postContent;
+        this.hashtags = hashtags;
         this.modifiedAt = new Date();
     }
 }
