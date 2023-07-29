@@ -7,6 +7,7 @@ import com.nts.board.post.domain.Post;
 import com.nts.board.post.dto.PostListResponseDto;
 import com.nts.board.post.dto.PostResponseDto;
 import com.nts.board.post.dto.PostSaveRequestDto;
+import com.nts.board.post.dto.PostUpdateRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,7 +37,9 @@ public class PostService {
                 .save(Post.builder()
                         .title(postSaveRequestDto.getTitle())
                         .postContent(postSaveRequestDto.getPostContent())
+                        .postAuthor(postSaveRequestDto.getPostAuthor())
                         .hashtags(hashtagList)
+                        .password(postSaveRequestDto.getPassword())
                         .build())
                         .getPostPk();
     }
@@ -47,10 +50,10 @@ public class PostService {
                 .getPassword().equals(requestPassword);
     }
     @Transactional
-    public Long modifyPost(Long postPk, PostSaveRequestDto postSaveRequestDto) {
+    public Long modifyPost(Long postPk, PostUpdateRequestDto postUpdateRequestDto) {
         Post post = postRepository.findById(postPk)
                 .orElseThrow(() -> new EntityNotFoundException());
-        post.update(postSaveRequestDto.getTitle(), postSaveRequestDto.getPostContent());
+        post.update(postUpdateRequestDto.getTitle(), postUpdateRequestDto.getPostContent());
         postRepository.save(post);
         return post.getPostPk();
     }
@@ -59,6 +62,9 @@ public class PostService {
     public Page<PostListResponseDto> findPostList(int page) {
         PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("postPk").descending());
         Page<Post> posts = postRepository.findAllBy(pageRequest);
+        System.out.println("시작");
+        for (Post post : posts) System.out.println(post);
+        System.out.println("끝");
         return posts.map(post -> PostListResponseDto.builder()
                 .postPk(post.getPostPk())
                 .title(post.getTitle())

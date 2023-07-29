@@ -37,14 +37,13 @@ public class Post {
     @ColumnDefault("0")
     private int postLike;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.REMOVE)
     @JoinTable(name = "post_hashtag",
             joinColumns = @JoinColumn(name = "postPk"),
             inverseJoinColumns = @JoinColumn(name = "hashtagPk"))
     private Set<Hashtag> hashtags = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "commentPk")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
     private List<Comment> comments = new ArrayList<>();
 
 
