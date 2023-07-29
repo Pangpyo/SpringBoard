@@ -4,6 +4,7 @@ import com.nts.board.post.application.PostService;
 import com.nts.board.post.dto.PostListResponseDto;
 import com.nts.board.post.dto.PostResponseDto;
 import com.nts.board.post.dto.PostSaveRequestDto;
+import com.nts.board.post.dto.PostUpdateRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -19,8 +20,8 @@ public class PostController {
     private static final String SUCCESS = "success";
     private static final String FAIL = "fail";
     @PostMapping
-    public ResponseEntity<String> postAdd(@RequestBody PostSaveRequestDto PostRequstdto) {
-        if (postService.addPost(PostRequstdto) > 0) {
+    public ResponseEntity<String> postAdd(@RequestBody PostSaveRequestDto postSaveRequestdto) {
+        if (postService.addPost(postSaveRequestdto) > 0) {
             return new ResponseEntity<String>(SUCCESS, HttpStatus.CREATED);
         }else {
             return new ResponseEntity<String>(FAIL, HttpStatus.BAD_REQUEST);
@@ -37,8 +38,8 @@ public class PostController {
     }
 
     @PutMapping("/{postPk}")
-    public ResponseEntity<String> postModify(@PathVariable Long postPk, @RequestBody PostSaveRequestDto postRequstdto) {
-        postService.modifyPost(postPk, postRequstdto);
+    public ResponseEntity<String> postModify(@PathVariable Long postPk, @RequestBody PostUpdateRequestDto postUpdateRequestdto) {
+        postService.modifyPost(postPk, postUpdateRequestdto);
         return new ResponseEntity<String>(SUCCESS, HttpStatus.OK);
     }
 
@@ -60,6 +61,7 @@ public class PostController {
 
     @DeleteMapping("/{postPk}")
     public ResponseEntity<?> postRemove(@PathVariable Long postPk) {
+        postService.removePost(postPk);
         return new ResponseEntity<String>(SUCCESS, HttpStatus.OK);
     }
 }
