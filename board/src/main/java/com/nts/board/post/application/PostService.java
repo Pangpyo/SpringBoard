@@ -30,6 +30,9 @@ public class PostService {
 
 
     public Long addPost(PostSaveRequestDto postSaveRequestDto) {
+        if (postSaveRequestDto.getHashtags().size() > 5){
+            throw new IllegalArgumentException();
+        }
         // 사용자가 설정한 해시태그들중 없는 것들은 해시태그 테이블에 추가한 후 리스트로 만든다
         Set<Hashtag> hashtags = postSaveRequestDto.getHashtags().stream()
                 .map(hashtag -> hashtagRepository.existsByText(hashtag) ? hashtagRepository.findByText(hashtag) :
@@ -53,6 +56,9 @@ public class PostService {
     }
 
     public Long modifyPost(Long postPk, PostUpdateRequestDto postUpdateRequestDto) {
+        if (postUpdateRequestDto.getHashtags().size() > 5){
+            throw new IllegalArgumentException();
+        }
         Post post = postRepository.findById(postPk)
                 .orElseThrow(() -> new EntityNotFoundException());
         Set<Hashtag> hashtags = postUpdateRequestDto.getHashtags().stream()
