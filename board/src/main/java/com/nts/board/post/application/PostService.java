@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.Convert;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.Join;
@@ -50,9 +51,10 @@ public class PostService {
     }
 
     public boolean checkPassword(Long postPk, String requestPassword) {
-        return postRepository.findById(postPk)
+        String encryptedPassword = PasswordAlgorithm.convert(requestPassword);
+        return  postRepository.findById(postPk)
                 .orElseThrow(() -> new EntityNotFoundException())
-                .getPassword().equals(requestPassword);
+                .getPassword().equals(encryptedPassword);
     }
 
     public Long modifyPost(Long postPk, PostUpdateRequestDto postUpdateRequestDto) {
