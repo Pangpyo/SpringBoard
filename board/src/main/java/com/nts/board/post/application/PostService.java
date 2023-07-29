@@ -62,9 +62,6 @@ public class PostService {
     public Page<PostListResponseDto> findPostList(int page) {
         PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("postPk").descending());
         Page<Post> posts = postRepository.findAllBy(pageRequest);
-        System.out.println("시작");
-        for (Post post : posts) System.out.println(post);
-        System.out.println("끝");
         return posts.map(post -> PostListResponseDto.builder()
                 .postPk(post.getPostPk())
                 .title(post.getTitle())
