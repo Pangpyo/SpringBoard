@@ -1,11 +1,11 @@
 package com.nts.board.post.domain;
 
 import com.nts.board.comment.domain.Comment;
+import com.nts.board.post.dto.PasswordConverter;
 import com.sun.istack.NotNull;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
-
 import javax.persistence.*;
 import java.util.*;
 
@@ -28,6 +28,8 @@ public class Post {
     @ColumnDefault("0")
     private int hit;
     @NotNull
+
+    @Convert(converter = PasswordConverter.class)
     private String password;
 
     @CreationTimestamp
@@ -61,9 +63,6 @@ public class Post {
         this.hashtags = hashtags;
         this.comments = comments;
     }
-
-
-
 
     public void update(String title, String postContent, Set<Hashtag> hashtags) {
         this.title = title;

@@ -1,10 +1,7 @@
 package com.nts.board.post.api;
 
 import com.nts.board.post.application.PostService;
-import com.nts.board.post.dto.PostListResponseDto;
-import com.nts.board.post.dto.PostResponseDto;
-import com.nts.board.post.dto.PostSaveRequestDto;
-import com.nts.board.post.dto.PostUpdateRequestDto;
+import com.nts.board.post.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -54,14 +51,31 @@ public class PostController {
     }
 
     @GetMapping("/{postPk}")
-    public ResponseEntity<?> postDetail(@PathVariable Long postPk) {
+    public ResponseEntity<PostResponseDto> postDetail(@PathVariable Long postPk) {
+        postService.updateHits(postPk);
         PostResponseDto post = postService.findPostDetail(postPk);
         return new ResponseEntity<PostResponseDto>(post, HttpStatus.OK);
     }
 
     @DeleteMapping("/{postPk}")
-    public ResponseEntity<?> postRemove(@PathVariable Long postPk) {
+    public ResponseEntity<String> postRemove(@PathVariable Long postPk) {
         postService.removePost(postPk);
         return new ResponseEntity<String>(SUCCESS, HttpStatus.OK);
+    }
+
+    @PatchMapping("/{postPk}")
+    public ResponseEntity<String> postLike(@PathVariable Long postPk, @RequestParam boolean isLike) {
+        postService.likePost(postPk, isLike);
+        return new ResponseEntity<String>(SUCCESS, HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> postSearch(@RequestParam SearchField searchField, @RequestParam String searchKeyword, @RequestParam int page) {
+        Page<PostListResponseDto> postSearchResults = postService.searchPost(searchField, searchKeyword, page);
+        if (postSearchResults != null && postSearchResults.getSize() != 0) {
+            return new ResponseEntity<Page<PostListResponseDto>>(postSearchResults, HttpStatus.OK);
+        }else {
+            return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+        }
     }
 }
