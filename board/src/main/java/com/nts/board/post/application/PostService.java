@@ -5,12 +5,18 @@ import com.nts.board.post.dao.PostRepository;
 import com.nts.board.post.domain.Hashtag;
 import com.nts.board.post.domain.Post;
 import com.nts.board.post.dto.PostListResponseDto;
-import com.nts.board.post.dto.PostRequestDto;
+import com.nts.board.post.dto.PostResponseDto;
+import com.nts.board.post.dto.PostSaveRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -19,40 +25,70 @@ public class PostService {
     private final PostRepository postRepository;
     private final HashtagRepository hashtagRepository;
 
-    public Long savePost(PostRequestDto dto) {
-        List<Hashtag> hashtagList = new ArrayList<>();
-        for (String hashtag : dto.getHashtags()) {
-            if (!hashtagRepository.existsByText(hashtag)) {
-                hashtagList.add(hashtagRepository.save(Hashtag.builder().text(hashtag).build()));
-            }else {
-                hashtagList.add(hashtagRepository.findByText(hashtag));
-            }
-        }
+    @Transactional
+    public Long addPost(PostSaveRequestDto postSaveRequestDto) {
+        // 사용자가 설정한 해시태그들중 없는 것들은 해시태그 테이블에 추가한 후 리스트로 만든다
+        Set<Hashtag> hashtagList = postSaveRequestDto.getHashtags().stream()
+                .map(hashtag -> hashtagRepository.existsByText(hashtag) ? hashtagRepository.findByText(hashtag) :
+                        hashtagRepository.save(Hashtag.builder().text(hashtag).build()))
+                .collect(Collectors.toSet());
         return postRepository
                 .save(Post.builder()
-                        .title(dto.getTitle())
-                        .postContent(dto.getPostContent())
-                        .postAuthor(dto.getPostAuthor())
-                        .password(dto.getPassword())
+                        .title(postSaveRequestDto.getTitle())
+                        .postContent(postSaveRequestDto.getPostContent())
                         .hashtags(hashtagList)
                         .build())
                         .getPostPk();
     }
 
-    public boolean modifyPost(Long postPk, PostRequestDto dto) {
+    public boolean checkPassword(Long postPk, String requestPassword) {
+        return postRepository.findById(postPk)
+                .orElseThrow(() -> new EntityNotFoundException())
+                .getPassword().equals(requestPassword);
+    }
+    @Transactional
+    public Long modifyPost(Long postPk, PostSaveRequestDto postSaveRequestDto) {
         Post post = postRepository.findById(postPk)
-                .orElse(null);
-        if (post != null && dto.getPostAuthor().equals(post.getPostAuthor()) &&
-        dto.getPassword().equals(post.getPassword())) {
-            post.update(dto.getTitle(), dto.getPostContent());
-            postRepository.save(post);
-            return true;
-        }
-        return false;
+                .orElseThrow(() -> new EntityNotFoundException());
+        post.update(postSaveRequestDto.getTitle(), postSaveRequestDto.getPostContent());
+        postRepository.save(post);
+        return post.getPostPk();
     }
 
 
-    public List<PostListResponseDto> findPostList() {
-        return postRepository.findAllByOrderByPostPkDesc();
+    public Page<PostListResponseDto> findPostList(int page) {
+        PageRequest pageRequest = PageRequest.of(page, 10, Sort.by("postPk").descending());
+        Page<Post> posts = postRepository.findAllBy(pageRequest);
+        return posts.map(post -> PostListResponseDto.builder()
+                .postPk(post.getPostPk())
+                .title(post.getTitle())
+                .createdAt(post.getCreatedAt())
+                .postAuthor(post.getPostAuthor())
+                .hit(post.getHit())
+                .postLike(post.getPostLike())
+                .commentCount(post.getComments().size())
+                .build());
+    }
+
+    public PostResponseDto findPostDetail(Long postPk) {
+        Post post = postRepository.findById(postPk)
+                .orElseThrow(() -> new EntityNotFoundException());
+        return PostResponseDto.builder()
+                .postPk(post.getPostPk())
+                .title(post.getTitle())
+                .postContent(post.getPostContent())
+                .postAuthor(post.getPostAuthor())
+                .hit(post.getHit())
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .postLike(post.getPostLike())
+                .hashtags(post.getHashtags())
+                .build();
+    }
+
+    public Long removePost(Long postPk) {
+        Post post = postRepository.findById(postPk).orElseThrow(() -> new EntityNotFoundException());
+        postRepository.delete(post);
+        return postPk;
     }
 }

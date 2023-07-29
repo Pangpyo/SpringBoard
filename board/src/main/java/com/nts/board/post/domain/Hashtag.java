@@ -17,10 +17,6 @@ public class Hashtag {
     private Long hashtagPk;
     @Column(unique = true)
     private String text;
-
-    @ManyToMany(mappedBy = "hashtags")
-    private List<Post> posts;
-
     @Builder
     public Hashtag(String text) {
         this.text = text;
