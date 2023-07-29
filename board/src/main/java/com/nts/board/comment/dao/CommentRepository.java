@@ -1,7 +1,6 @@
 package com.nts.board.comment.dao;
 
 import com.nts.board.comment.domain.Comment;
-import com.nts.board.comment.dto.CommentResponseDto;
 import com.nts.board.post.domain.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
