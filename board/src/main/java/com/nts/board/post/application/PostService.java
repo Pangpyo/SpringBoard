@@ -119,4 +119,7 @@ public class PostService {
         postRepository.updateLikes(postPk, likeValue);
     }
 
+    public Long countPost() {
+        return postRepository.count();
+    }
 }

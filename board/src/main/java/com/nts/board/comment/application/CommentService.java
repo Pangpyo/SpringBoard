@@ -46,4 +46,8 @@ public class CommentService {
         comment.delete();
         commentRepository.save(comment);
     }
+
+    public Long countComment() {
+        return commentRepository.count();
+    }
 }
