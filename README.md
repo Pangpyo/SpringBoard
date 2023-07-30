@@ -30,7 +30,7 @@
 
 ## Backend
 ### Backend API Docs
-[swagger api docs](./swagger_api_docs.html)
+[swagger api docs](https://pangpyo.github.io/)
 
 ### ERD 결과
 ![ERD_result](./README/ERD_result.png)
