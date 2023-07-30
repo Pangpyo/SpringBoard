@@ -1,4 +1,10 @@
 # nts-KimKwangPyo
+## 기획
+### 게시판 구현하기
+* 요구사항 완성도
+* 좋은 코드
+* 좋은 설계
+위 세가지 관점에서 수행하기
 
 ## 설계
 ### 요구사항
@@ -19,5 +25,13 @@
 13. 게시글 상세에서 `Like` 또는 `unlike`를 할 수 있고, Like 건수를 표시한다.
 14. 삭제 처리된 댓글은 `삭제된 댓글입니다.`라고 내용 대신 메시지를 노출한다.
 
-### ERD
+### ERD 설계
 ![ERD](./README/ERD.png)
+
+## Backend
+### Backend API Docs
+[swagger api docs](./swagger_api_docs.html)
+
+### ERD 결과
+![ERD_result](./README/ERD_result.png)
+
