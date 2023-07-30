@@ -34,7 +34,7 @@ public class CommentService {
         return comments.map(comment -> CommentResponseDto.builder()
                 .commentPk(comment.getCommentPk())
                 .commentAuthor(comment.getCommentAuthor())
-                .commentContent(comment.isDeleted() ? "삭제된 메시지입니다" : comment.getCommentContent())
+                .commentContent(comment.isDeleted() ? "삭제된 댓글입니다" : comment.getCommentContent())
                 .commentAt(comment.getCommentAt())
                 .isDeleted(comment.isDeleted())
                 .build());
